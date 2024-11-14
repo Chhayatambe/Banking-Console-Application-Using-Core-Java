@@ -1,0 +1,172 @@
+BANK INTERFACE: 
+ 
+package BANKAPP; 
+ 
+import java.util.Scanner; 
+ 
+public interface BANKAPP {    
+void createAccount(String AccountHolder,int pin,double initialDeposit);  
+void login(int accountNumber,int pin) throws Exception;  
+void withdraw(double amount)throws Exception;  
+void deposite(double amount)throws Exception; 
+double getBalance();  int getAccountNumber(); 
+ 
+} 
+
+//custom Exceptions 
+ 
+         
+class InsufficientbalanceException extends Exception{      
+public InsufficientbalanceException(String message) {      
+super(message);      }     }         
+class MinbalanceException extends Exception{      
+public MinbalanceException(String message) {      
+super(message);     
+}     }  
+class MaxdepositeAmountException extends Exception{      
+public MaxdepositeAmountException(String message) {       
+super(message);      } 
+}          
+class MindepositeAmountException extends Exception{     
+public MindepositeAmountException(String message) {     
+super(message);     
+} 
+    } 
+
+//Bank implementation class implements  
+ 
+         class BankImplementation implements BANKAPP
+{            private static final double MIN_BALANCE = 100.00;      
+private static final double MAX_DEPOSIT_AMOUNT  = 50000.00;      
+private static final double MIN_DEPOSIT_AMOUNT = 50.0;           
+private int AccountNumber;      private String AccountHolder;    
+private int Pin;      private double Balance;    
+private boolean LoggedIn = false;          
+@Override     
+public void createAccount(String AccountHolder,int pin,double initialDeposit) {              
+this.AccountNumber = (int) (Math.random() * 10000);         // Simple account number generator              
+this.AccountHolder = AccountHolder;       
+this.Pin = pin;        
+this.Balance = initialDeposit;                    
+System.out.println("ACCOUNT CREATED SUCCESSFULLY!! YOUR ACCOUNT NUMBER IS :  " +this.AccountNumber);                          
+}            @Override      
+public void login(int accountNumber,int pin) throws Exception{             
+if(this.AccountNumber == accountNumber && this.Pin == pin) {               
+LoggedIn = true;        
+System.out.println("LOGIN SUCCESSFULLY.. WELCOME!! " +AccountHolder);             
+}       else {        throw new Exception("INVALID ACCOUNT NUMBER OR PIN");       }        
+
+}   
+
+
+
+
+
+
+@Override     
+public void withdraw(double amount) throws Exception {             
+if(!LoggedIn) {        throw new Exception("PLEASE LOGIN TO PROCEED");       
+}              
+if(amount > Balance - MIN_BALANCE) {       
+throw new Exception ("Insufficient balance for this withdrawal!");      
+}      
+if (Balance - amount < MIN_BALANCE) {                
+throw new Exception("Withdrawal denied! Minimum balance of " + MIN_BALANCE + " must be maintained.");           
+}            
+Balance -= amount;            
+System.out.println("Withdrawal successful! New balance: " + Balance);        
+}                   @Override           
+public void deposite(double amount)throws Exception{              
+if (!LoggedIn) {               
+throw new Exception("Please login to proceed.");         
+}            
+if (amount > MAX_DEPOSIT_AMOUNT) {               
+throw new Exception("Deposit limit exceeded! Maximum deposit allowed is " + MAX_DEPOSIT_AMOUNT);         
+}             if (amount < MIN_DEPOSIT_AMOUNT) {              
+throw new Exception("Deposit amount too low! Minimum deposit allowed is " + MIN_DEPOSIT_AMOUNT);           
+}             Balance += amount;             System.out.println("Deposit successful! New balance: " + Balance);    
+}            @Override       
+public double getBalance() {        
+if (LoggedIn) {                 
+return Balance;             } 
+else {                 
+System.out.println("Please login to view balance.");               
+return 0;             }      
+} 
+
+
+
+BANK CLASS(MAIN CLASS ENTRY POINT) 
+ 
+ 
+package BANKAPP; 
+ 
+import java.util.Scanner; 
+ 
+public class MAINBANK{ 
+public static void main(String[] args) {  
+Scanner scanner = new Scanner(System.in);  
+BankImplementation bank = new BankImplementation();   
+System.out.println("WELCOME TO BANKAPP!!");      // Account creation         
+System.out.print("Enter your name: ");       
+String name = scanner.nextLine();       
+System.out.print("Create a 4-digit PIN: ");         
+int pin = scanner.nextInt();        
+System.out.print("Enter initial deposit amount: ");      
+double initialDeposit = scanner.nextDouble();        
+bank.createAccount(name, pin, initialDeposit);       
+int generatedAccountNumber = bank.getAccountNumber();  // Retrieve the account number for display        
+System.out.println("Your Account Number is: " + generatedAccountNumber);         //Login                
+try {             System.out.print("Enter your account number to login: ");            
+int accountNumber = scanner.nextInt();             
+System.out.print("Enter your PIN: ");          
+int Pin = scanner.nextInt();             
+bank.login(accountNumber, Pin); 
+ 
+            // Menu             
+int choice;             
+do {                 
+System.out.println("\nSelect an option:"); 
+                
+System.out.println("1. Withdraw");                
+System.out.println("2. Deposit");                 
+System.out.println("3. Balance Inquiry");                 
+System.out.println("4. Exit");              
+System.out.print("Your choice: ");               
+choice = scanner.nextInt(); 
+ 
+             
+switch (choice) {                   
+case 1:                        // Withdraw                       
+
+System.out.print("Enter amount to withdraw: ");                        
+double withdrawAmount = scanner.nextDouble();                       
+try {                             bank.withdraw(withdrawAmount);                   
+} catch (InsufficientbalanceException| MinbalanceException e) {                            
+System.out.println("Error: " + e.getMessage());                         }                  
+break;                   
+case 2:  // Deposit                         
+System.out.print("Enter amount to deposit: ");                        
+double depositAmount = scanner.nextDouble();                       
+try {                             bank.deposite(depositAmount);    
+} catch (MaxdepositeAmountException | MindepositeAmountException e) {       
+System.out.println("Error: " + e.getMessage());                         }   
+break;                     case 3:  // Balance Inquiry                      
+System.out.println("Your current balance is: " + bank.getBalance());               
+break;                     case 4:  // Exit                     
+
+System.out.println("Thank you for using BankApp!");                    
+break;                  
+default:                     
+System.out.println("Invalid option! Please select again.");          
+break;              
+}           
+} 
+while (choice != 4);         } 
+catch (Exception e) {          
+System.out.println("Error: " + e.getMessage());        
+} finally {        
+scanner.close();      
+}     } }  
+ 
+  @Override   public int getAccountNumber() {    // TODO Auto-generated method stub    return this.AccountNumber;   }           }       
